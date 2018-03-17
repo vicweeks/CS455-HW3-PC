@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<!-- Put site-specific property overrides in this file. -->
+
+<configuration>
+    <property>
+    	<name>hadoop.tmp.dir</name>
+    	<value>file:///tmp/hadoop-${user.name}</value>
+    </property>
+    <property>
+        <name>fs.default.name</name>
+        <value>viewfs:///</value>
+    </property>
+    <property>
+        <name>fs.viewfs.mounttable.default.link./home</name>
+        <value>hdfs://richmond:49000</value>
+    </property>
+    <property>
+        <name>fs.viewfs.mounttable.default.link./tmp</name>
+        <value>hdfs://richmond:49000/tmp</value>
+    </property>
+    <property>
+        <name>fs.viewfs.mounttable.default.link./data</name>
+        <value>hdfs://augusta:56780/data</value>
+    </property>
+</configuration>
+</property>

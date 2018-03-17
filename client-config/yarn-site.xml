@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License. See accompanying LICENSE file.
+-->
+
+<!-- Put site-specific property overrides in this file. -->
+
+<configuration>
+<property>
+  <name>yarn.resourcemanager.resource-tracker.address</name>
+    <value>augusta:56781</value>
+    <description>host is the hostname of the resource manager and 
+    port is the port on which the NodeManagers contact the Resource Manager.
+    </description>
+  </property>
+
+  <property>
+    <name>yarn.resourcemanager.scheduler.address</name>
+    <value>augusta:56782</value>
+    <description>host is the hostname of the resourcemanager and port is the port
+    on which the Applications in the cluster talk to the Resource Manager.
+    </description>
+  </property>
+
+  <property>
+    <name>yarn.resourcemanager.scheduler.class</name>
+    <value>org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler</value>
+    <description>In case you do not want to use the default scheduler</description>
+  </property> 
+
+  <property>
+    <name>yarn.resourcemanager.address</name>
+    <value>augusta:56783</value>
+    <description>the host is the hostname of the ResourceManager and the port is the port on
+    which the clients can talk to the Resource Manager. </description>
+  </property>
+</configuration>
