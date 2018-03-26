@@ -50,7 +50,13 @@ public class Q1Mapper extends Mapper<LongWritable, Text, Text, IntWritable> {
 		hour = depTime.substring(0,2);
 	    int hourInt = Integer.parseInt(hour);
 	    hourInt = hourInt % 24;
-	    hour = "HOUR:" + Integer.toString(hourInt);
+	    if (hourInt == 0)
+		hour = "00";
+	    else if (hourInt > 0 && hourInt < 10)
+		hour = "0" + Integer.toString(hourInt);
+	    else if (hourInt >= 10)
+		hour = Integer.toString(hourInt);
+	    hour = "HOUR:" + hour;
 	    context.write(new Text(hour), delay);
 	}
 

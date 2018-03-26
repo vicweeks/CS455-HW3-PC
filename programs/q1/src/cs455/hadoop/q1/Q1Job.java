@@ -7,6 +7,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
 import java.io.IOException;
 
@@ -40,6 +41,8 @@ public class Q1Job {
             FileInputFormat.addInputPath(job, new Path("/data/main"));
             // path to output in HDFS
             FileOutputFormat.setOutputPath(job, new Path("/home/output-1"));
+	    //MultipleOutputs.addNamedOutput(job, "file", FileOutputFormat.class,
+	    //				   Text.class, IntWritable.class);
             // Block until the job is completed.
             System.exit(job.waitForCompletion(true) ? 0 : 1);
         } catch (IOException e) {

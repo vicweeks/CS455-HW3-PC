@@ -3,6 +3,7 @@ package cs455.hadoop.q1;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
 import java.io.IOException;
 
@@ -14,6 +15,14 @@ import java.io.IOException;
  * Emits means as <key, meanDelay> pairs.
  */
 public class Q1Reducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+    private MultipleOutputs mos;
+
+    @Override
+    public void setup(Context context) throws IOException, InterruptedException {
+	super.setup(context);
+	mos = new MultipleOutputs(context);
+    }
+
     @Override
     protected void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
         int numEntries = 0;
@@ -26,7 +35,18 @@ public class Q1Reducer extends Reducer<Text, IntWritable, Text, IntWritable> {
         }
 
 	int mean = delaySum / numEntries;
-	
-        context.write(key, new IntWritable(mean));
+	if (key.toString().charAt(0) == 'H')
+	    mos.write(key, new IntWritable(mean), "/home/output-1/HourOutput");
+	else if (key.toString().charAt(0) == 'D')
+	    mos.write(key, new IntWritable(mean), "/home/output-1/DayOutput");
+	else if (key.toString().charAt(0) == 'M')
+	    mos.write(key, new IntWritable(mean), "/home/output-1/MonthOutput");
+        //context.write(key, new IntWritable(mean));
+    }
+
+    @Override
+    public void cleanup(Context context) throws IOException, InterruptedException {
+	mos.close();    
+	super.cleanup(context);    
     }
 }
