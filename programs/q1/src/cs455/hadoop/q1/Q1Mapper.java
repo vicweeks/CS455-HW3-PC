@@ -1,6 +1,6 @@
 package cs455.hadoop.q1;
 
-import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -13,7 +13,7 @@ import java.io.IOException;
  * Extracts ArrDelay from index 15 and DepDelay from index 16. 
  * Emits <"HOUR:"(hour), meanDelay>, <"DAY:"(day), meanDelay>, <"MONTH:"(month), meanDelay> pairs.
  */
-public class Q1Mapper extends Mapper<LongWritable, Text, Text, IntWritable> {
+public class Q1Mapper extends Mapper<LongWritable, Text, Text, DoubleWritable> {
     @Override
     protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
         String[] record = value.toString().split(",");
@@ -36,8 +36,8 @@ public class Q1Mapper extends Mapper<LongWritable, Text, Text, IntWritable> {
 	    depDelayInt = Integer.parseInt(depDelay);
 	    
 	// calculate mean overall delay
-	int meanDelay = (arrDelayInt + depDelayInt) / 2;
-	IntWritable delay = new IntWritable(meanDelay);
+	double meanDelay = (arrDelayInt + depDelayInt) / 2;
+	DoubleWritable delay = new DoubleWritable(meanDelay);
 	
 	// write output for hour
 	if (!depTime.equals("NA") && !depTime.equals("DepTime")) {
