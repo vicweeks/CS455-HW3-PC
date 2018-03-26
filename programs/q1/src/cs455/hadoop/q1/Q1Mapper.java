@@ -6,60 +6,68 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import java.io.IOException;
-import java.util.StringTokenizer;
 
 /*
  * Mapper: Reads line by line (one line is one record with 29 comma-separated fields), 
- * (*DEMO*) extracts Carrier Code from index 9. Emits <UniqueCarrier, 1> pairs 
+ * Extracts DepTime from index 5, DayOfWeek from index 4, and Month from index 2. 
+ * Extracts ArrDelay from index 15 and DepDelay from index 16. 
+ * Emits <"HOUR:"(hour), meanDelay>, <"DAY:"(day), meanDelay>, <"MONTH:"(month), meanDelay> pairs.
  */
 public class Q1Mapper extends Mapper<LongWritable, Text, Text, IntWritable> {
-    //TODO
     @Override
     protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
-        // tokenize into fields.
-        StringTokenizer itr = new StringTokenizer(value.toString(), ",");
-	// extract UniqueCarrier
+        String[] record = value.toString().split(",");
 
-	while (itr.hasMoreTokens()) {	
+	if (record.length != 29)
+	    return;
 
-	    if (itr.countTokens() >= 29) {
+	String depTime = record[4];
+	String dayOfWeek = record[3];
+	String month = record[1];
+	String arrDelay = record[14];
+	String depDelay = record[15];
+
+	int arrDelayInt = 0;
+	int depDelayInt = 0;
+	
+	if (!arrDelay.equals("NA") && !arrDelay.equals("ArrDelay"))
+	    arrDelayInt = Integer.parseInt(arrDelay);
+	if (!depDelay.equals("NA") && !depDelay.equals("DepDelay"))
+	    depDelayInt = Integer.parseInt(depDelay);
 	    
-	itr.nextToken(); // 1: Year
-	itr.nextToken(); // 2: Month
-	itr.nextToken(); // 3: DayOfMonth
-	itr.nextToken(); // 4: DayOfWeek
-	itr.nextToken(); // 5: DepTime
-	itr.nextToken(); // 6: CRSDepTime
-	itr.nextToken(); // 7: ArrTime
-	itr.nextToken(); // 8: CRSArrTime
+	// calculate mean overall delay
+	int meanDelay = (arrDelayInt + depDelayInt) / 2;
+	IntWritable delay = new IntWritable(meanDelay);
 	
-	context.write(new Text(itr.nextToken()), new IntWritable(1)); // 9: UniqueCarrier
-	
-	itr.nextToken(); // 10: FlightNum
-	itr.nextToken(); // 11: TailNum
-	itr.nextToken(); // 12: ActualElapsedTime
-	itr.nextToken(); // 13: CRSElapsedTime
-	itr.nextToken(); // 14: AirTime
-	itr.nextToken(); // 15: ArrDelay
-	itr.nextToken(); // 16: DepDelay
-	itr.nextToken(); // 17: Origin
-	itr.nextToken(); // 18: Dest
-	itr.nextToken(); // 19: Distance
-	itr.nextToken(); // 20: TaxiIn
-	itr.nextToken(); // 21: TaxiOut
-	itr.nextToken(); // 22: Cancelled
-	itr.nextToken(); // 23: CancellationCode
-	itr.nextToken(); // 24: Diverted
-	itr.nextToken(); // 25: CarrierDelay
-	itr.nextToken(); // 26: WeatherDelay
-	itr.nextToken(); // 27: NASDelay
-	itr.nextToken(); // 28: SecurityDelay
-	itr.nextToken(); // 29:	LateAircraftDelay
-
-	    }
-	    else {
-	        return;
-	    }
+	// write output for hour
+	if (!depTime.equals("NA") && !depTime.equals("DepTime")) {
+	    String hour = "24"; // Allows parsing as int
+	    if (depTime.length() == 2) // midnight
+		hour = "00";
+	    else if (depTime.length() == 3) // (01,09)
+		hour = "0" + depTime.substring(0,1);
+	    else if (depTime.length() == 4) // (10,23)
+		hour = depTime.substring(0,2);
+	    int hourInt = Integer.parseInt(hour);
+	    hourInt = hourInt % 24;
+	    hour = "HOUR:" + Integer.toString(hourInt);
+	    context.write(new Text(hour), delay);
 	}
+
+	// write output for day	
+	if (dayOfWeek.length() == 1) { // 1 (Monday) - 7 (Sunday)
+	    dayOfWeek = "DAY:" + dayOfWeek;
+	    context.write(new Text(dayOfWeek), delay);
+	}
+
+	// write output for month
+	if (!month.equals("NA") && !month.equals("Month")) {
+	    if (month.length() == 1) // (1-9)
+		month = "0" + month;
+	    month = "MONTH:" + month;
+	    context.write(new Text(month), delay);
+	}
+		
     }
+    
 }

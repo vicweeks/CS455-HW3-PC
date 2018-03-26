@@ -8,18 +8,25 @@ import java.io.IOException;
 
 /*
  * Reducer: Input to the reducer is the output from the mapper. 
- * (*DEMO*) It receives UniqueCarrier, list<count> pairs.
- * (*DEMO*) Sums up individual counts per given UniqueCarrier. Emits <UniqueCarrier, total count> pairs.
+ * It receives <"HOUR:"(hour), delay>, <"DAY:"(day), delay>, and <"MONTH:"(month), delay> pairs.
+ * Sums up numEntries and delays for each key. 
+ * Extracts mean by dividing delaySum by numEntries.
+ * Emits means as <key, meanDelay> pairs.
  */
 public class Q1Reducer extends Reducer<Text, IntWritable, Text, IntWritable> {
-    //TODO
     @Override
     protected void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
-        int count = 0;
-        // calculate the total count
+        int numEntries = 0;
+	int delaySum = 0;
+	
+        // calculate numEntries and delaySum
         for(IntWritable val : values){
-            count += val.get();
+	    numEntries++;
+	    delaySum += val.get();
         }
-        context.write(key, new IntWritable(count));
+
+	int mean = delaySum / numEntries;
+	
+        context.write(key, new IntWritable(mean));
     }
 }

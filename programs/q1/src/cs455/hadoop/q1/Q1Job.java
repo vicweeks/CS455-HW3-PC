@@ -24,11 +24,8 @@ public class Q1Job {
             job.setJarByClass(Q1Job.class);
             // Mapper
             job.setMapperClass(Q1Mapper.class);
-
-	    // TODO: may need to make a combiner
-	    // Combiner. We use the reducer as the combiner in this case.	    
-            job.setCombinerClass(Q1Reducer.class);
-
+	    // Combiner. None used for this case.	    
+            //job.setCombinerClass(Q1Reducer.class);
 	    // Reducer
             job.setReducerClass(Q1Reducer.class);
             // Outputs from the Mapper.
