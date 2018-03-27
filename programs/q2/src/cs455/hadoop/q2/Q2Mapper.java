@@ -1,6 +1,6 @@
-package cs455.hadoop.q1;
+package cs455.hadoop.q2;
 
-import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -13,8 +13,8 @@ import java.io.IOException;
  * Extracts ArrDelay from index 15 and DepDelay from index 16. 
  * Emits <"HOUR:"(hour), meanDelay>, <"DAY:"(day), meanDelay>, <"MONTH:"(month), meanDelay> pairs.
  */
-public class Q1Mapper extends Mapper<LongWritable, Text, Text, DoubleWritable> {
-    @Override
+public class Q2Mapper extends Mapper<LongWritable, Text, Text, IntWritable> {
+   @Override
     protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
         String[] record = value.toString().split(",");
 
@@ -36,11 +36,11 @@ public class Q1Mapper extends Mapper<LongWritable, Text, Text, DoubleWritable> {
 	    depDelayInt = Integer.parseInt(depDelay);
 	    
 	// calculate mean overall delay
-	double meanDelay = (arrDelayInt + depDelayInt) / 2;
-	DoubleWritable delay = new DoubleWritable(meanDelay);
+	int meanDelay = (arrDelayInt + depDelayInt) / 2;
+	IntWritable delay = new IntWritable(meanDelay);
 	
 	// write output for hour
-	if (!depTime.equals("NA") && !depTime.equals("DepTime")) {
+	if (!depTime.equals("NA")) {
 	    String hour = "24"; // Allows parsing as int
 	    if (depTime.length() == 2) // midnight
 		hour = "00";
@@ -48,16 +48,10 @@ public class Q1Mapper extends Mapper<LongWritable, Text, Text, DoubleWritable> {
 		hour = "0" + depTime.substring(0,1);
 	    else if (depTime.length() == 4) // (10,23)
 		hour = depTime.substring(0,2);
-	    int hourInt = Integer.parseInt(hour);
-	    hourInt = hourInt % 24;
-	    if (hourInt == 0)
-		hour = "00";
-	    else if (hourInt > 0 && hourInt < 10)
-		hour = "0" + Integer.toString(hourInt);
-	    else if (hourInt >= 10)
-		hour = Integer.toString(hourInt);
-	    hour = "HOUR:" + hour;
-	    context.write(new Text(hour), delay);
+	    if (Integer.parseInt(hour) < 24) {
+		hour = "HOUR:" + hour;
+		context.write(new Text(hour), delay);
+	    }
 	}
 
 	// write output for day	
@@ -67,7 +61,7 @@ public class Q1Mapper extends Mapper<LongWritable, Text, Text, DoubleWritable> {
 	}
 
 	// write output for month
-	if (!month.equals("NA") && !month.equals("Month")) {
+	if (!month.equals("NA")) {
 	    if (month.length() == 1) // (1-9)
 		month = "0" + month;
 	    month = "MONTH:" + month;
