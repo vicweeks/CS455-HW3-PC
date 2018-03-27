@@ -2,7 +2,6 @@ package cs455.hadoop.q3;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.fs.Path;
 
@@ -18,13 +17,13 @@ import java.util.HashMap;
  * Compares Origin and Dest with airports.csv table to extract airport info
  * Emits <year, (airportName, sum)> pairs 
  */
-public class Q3Mapper extends Mapper<LongWritable, Text, Text, IntWritable> {
+public class Q3Mapper extends Mapper<LongWritable, Text, Text, Text> {
 
     Map<String, String> airportsData = new HashMap<String, String>(); // Store data with <iata, airport_data>
     
     @Override
     public void setup(
-	Mapper<LongWritable, Text, Text, IntWritable>.Context context)
+	Mapper<LongWritable, Text, Text, Text>.Context context)
 	throws IOException, InterruptedException {
 
 	if (context.getCacheFiles() != null && context.getCacheFiles().length > 0) {
@@ -54,22 +53,19 @@ public class Q3Mapper extends Mapper<LongWritable, Text, Text, IntWritable> {
 	String year = record[0];
 	String origin = record[16];
 	String dest = record[17];
-		
-	//context.write(new Text(test), new IntWritable(1));
-	
-	
-	//context.write(new Text(dest), new IntWritable(1));
-	/*
+			
 	// Check against airports.csv to determine if in Continental U.S.	
 	if (!origin.equals("NA") && !origin.equals("Origin")) {
-	    String[] originInfo = airportsData.get(origin);
-	    if (originInfo != null && !originInfo.equals("AK") && !originInfo.equals("HI")) {
-		context.write(new Text(originInfo[1]), new IntWritable(1));
-		//String airportInfo = originInfo[1] + ",1";
-		//context.write(new Text(year), new Text(airportInfo));	    
-	    }
+	    String originInfo = airportsData.get(origin);
+	    if (originInfo != null) {
+		String[] originInfoArr = originInfo.split(",");
+		String state = originInfoArr[3].replaceAll("^\"|\"$", "");
+		if (!state.equals("AK") && !state.equals("HI")) {
+		    String airportInfo = originInfoArr[1].replaceAll("^\"|\"$", "") + ",1";
+		    context.write(new Text(year), new Text(airportInfo));
+		}
+	    } 
 	}
-	*/
 	
 	if (!dest.equals("NA") && !dest.equals("Dest")) {
 	    String destInfo = airportsData.get(dest);
@@ -77,9 +73,8 @@ public class Q3Mapper extends Mapper<LongWritable, Text, Text, IntWritable> {
 		String[] destInfoArr = destInfo.split(",");
 		String state = destInfoArr[3].replaceAll("^\"|\"$", "");
 		if (!state.equals("AK") && !state.equals("HI")) {
-		    context.write(new Text(destInfoArr[1].replaceAll("^\"|\"$", "")), new IntWritable(1));
-		//String airportInfo = destInfo[1] + ",1";
-		//context.write(new Text(year), new Text(airportInfo));
+		    String airportInfo = destInfoArr[1].replaceAll("^\"|\"$", "") + ",1";
+		    context.write(new Text(year), new Text(airportInfo));		
 		}
 	    }
 	}

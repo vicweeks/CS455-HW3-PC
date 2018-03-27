@@ -24,15 +24,16 @@ public class Q3Job {
             job.setJarByClass(Q3Job.class);
 	    // Add supplementary dataset airports.csv to cache
 	    job.addCacheFile(new Path("/data/supplementary/airports.csv").toUri());
-            // Mapper
+	    // Mapper
             job.setMapperClass(Q3Mapper.class);
-	    // Combiner. Same as Reducer	    
-            job.setCombinerClass(Q3Reducer.class);
+	    // Combiner. None used for this program	    
+            // job.setCombinerClass(Q3Reducer.class);
 	    // Reducer
             job.setReducerClass(Q3Reducer.class);
+	    job.setNumReduceTasks(10);
             // Outputs from the Mapper.
             job.setMapOutputKeyClass(Text.class);
-            job.setMapOutputValueClass(IntWritable.class);
+            job.setMapOutputValueClass(Text.class);
             // Outputs from Reducer. It is sufficient to set only the following two properties
             // if the Mapper and Reducer has same key and value types. It is set separately for
             // elaboration.

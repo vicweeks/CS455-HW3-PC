@@ -6,6 +6,8 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /*
  * Reducer: Input to the reducer is the output from the mapper. 
@@ -34,20 +36,22 @@ public class Q1Reducer extends Reducer<Text, DoubleWritable, Text, DoubleWritabl
 	    delaySum += val.get();
         }
 
-	double mean = delaySum / numEntries;
+	double meanToTruncate = delaySum / numEntries;
+	double mean = BigDecimal.valueOf(meanToTruncate).setScale(3, RoundingMode.HALF_UP).doubleValue();
+	
 	if (key.toString().charAt(0) == 'H')
 	    mos.write(key, new DoubleWritable(mean), "/home/output-1/HourOutput");
 	else if (key.toString().charAt(0) == 'D') {
 	    String day = key.toString().substring(4);
 	    int index = Integer.parseInt(day);
-	    String[] days = {"", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+	    String[] days = {"", "Monday   ", "Tuesday  ", "Wednesday", "Thursday ", "Friday   ", "Saturday ", "Sunday   "};
 	    mos.write(new Text(days[index]), new DoubleWritable(mean), "/home/output-1/DayOutput");
 	}
 	else if (key.toString().charAt(0) == 'M') {
 	    String month = key.toString().substring(6);
 	    int index = Integer.parseInt(month);
-	    String[] months = {"", "January", "February", "March", "April", "May", "June",
-			     "July", "August", "September", "October", "November", "December"};
+	    String[] months = {"", "January  ", "February ", "March    ", "April    ", "May      ", "June      ",
+			     "July     ", "August   ", "September", "October  ", "November ", "December "};
 	    mos.write(new Text(months[index]), new DoubleWritable(mean), "/home/output-1/MonthOutput");
 	}
     }
