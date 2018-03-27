@@ -1,4 +1,4 @@
-package cs455.hadoop.q3;
+package cs455.hadoop.q4;
 
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
@@ -14,16 +14,13 @@ import java.util.stream.Collectors;
 
 /*
  * Reducer: Input to the reducer is the output from the mapper. 
- * It receives <year, (airportName, sum)> pairs.
- * Keeps record of top 10 sums in map <airportName, sum>
- * Emits top 10 sums as <airportName, sum> pairs in files corresponding to the year.
+ * It receives <CarrierName, (DelayCount,DelayTime)> pairs.
+ * Sums DelayCount and DelayTime for each carrier
+ * Emits ordered from highest to lowest <CarrierName, (DelayCount, meanDelayTime)> 
+ * pairs in file DelayCount and in file MeanDelayTime.
  */
-public class Q3Reducer extends Reducer<Text, Text, Text, IntWritable> {
+public class Q3Reducer extends Reducer<Text, Text, Text, Text> {
     private MultipleOutputs mos;
-
-    String generateFileName(Text k) {
-	return "/home/output-3/" + k.toString()+"Output";
-    }
     
     @Override
     public void setup(Context context) throws IOException, InterruptedException {
@@ -33,30 +30,31 @@ public class Q3Reducer extends Reducer<Text, Text, Text, IntWritable> {
     
     @Override
     protected void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
-        Map<String, Integer> airportSums = new HashMap<String, Integer>();
+        Map<String, Integer> delayCount = new HashMap<String, Integer>();
+	Map<String, Integer> meanDelay = new HashMap<String, Integer>();
 	
         // calculate total count
-        for(Text val : values){
+        for(Text val : values) {
 	    String[] value = val.toString().split(",");
 	    if (value.length != 2)
 		continue;
-	    String airport = value[0];
-	    int count = Integer.parseInt(value[1]);
-	    if (airportSums.containsKey(airport)) {
-		int currSum = airportSums.get(airport);
-		currSum += count;
-		airportSums.replace(airport, currSum);
+	    int count = Integer.parseInt(value[0]);
+	    int delayTime = Integer.parseInt(value[1]);
+	    if (delayCount.containsKey(key)) {
+		int currCount = delayCount.get(key);
+		currCount += count;
+		delayCount.replace(key, currCount);
 	    } else
-		airportSums.put(airport, count);
-	    /*
-	    int currSum = -1;
-	    
-	    currSum = airportSums.putIfAbsent(airport, count);
-	    if (currSum != -1) {
-		airportSums.replace(airport, currSum, currSum + count);
-	    }
-	    */
+		delayCount.put(key, count);	    
+	    if (meanDelay.containsKey(key)) {
+		int sumDelay = meanDelay.get(key);
+		currSum += delayTime;
+		meanDelay.replace(key, currSum);
+	    } else
+		meanDelay.put(key, delayTime);
         }
+
+	//TODO
 	
 	Map<String, Integer> sortedSums =
 	    airportSums.entrySet().stream()

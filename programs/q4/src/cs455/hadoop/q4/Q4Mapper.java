@@ -1,4 +1,4 @@
-package cs455.hadoop.q3;
+package cs455.hadoop.q4;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -13,13 +13,13 @@ import java.util.HashMap;
 
 /*
  * Mapper: Reads line by line (one line is one record with 29 comma-separated fields), 
- * Extracts Year from index 1, Origin from index 17, and Dest from index 18
- * Compares Origin and Dest with airports.csv table to extract airport info
- * Emits <year, (airportName, sum)> pairs 
+ * Extracts Year from index 1, UniqueCarrier from index 9, and CarrierDelay from index 25
+ * Compares UniqueCarrier with carriers.csv table to extract carrier name
+ * Emits <CarrierName, (DelayCount,DelayTime)> pairs 
  */
-public class Q3Mapper extends Mapper<LongWritable, Text, Text, Text> {
+public class Q4Mapper extends Mapper<LongWritable, Text, Text, Text> {
 
-    Map<String, String> airportsData = new HashMap<String, String>(); // Store data with <iata, airport_data>
+    Map<String, String> carrierData = new HashMap<String, String>(); // Store data with <Code, Description>
     
     @Override
     public void setup(
@@ -30,11 +30,11 @@ public class Q3Mapper extends Mapper<LongWritable, Text, Text, Text> {
 	    Path[] localPaths = context.getLocalCacheFiles();
 	    BufferedReader reader = new BufferedReader(new FileReader(localPaths[0].toString()));
 	    reader.readLine();
-	    String airportRecord = reader.readLine();
-	    while (airportRecord != null) {
-		String[] lineData = airportRecord.split(",");
-		airportsData.put(lineData[0].replaceAll("^\"|\"$", ""), airportRecord);
-		airportRecord = reader.readLine();
+	    String carrierRecord = reader.readLine();
+	    while (carrierRecord != null) {
+		String[] lineData = carrierRecord.split(",").replaceAll("^\"|\"$", "");
+		carrierData.put(lineData[0], lineData[1]);
+		carrierRecord = reader.readLine();
 	    }
 	}
 
@@ -51,31 +51,15 @@ public class Q3Mapper extends Mapper<LongWritable, Text, Text, Text> {
 	    return;
 
 	String year = record[0];
-	String origin = record[16];
-	String dest = record[17];
+	String uniqueCarrier = record[8];
+	String carrierDelay = record[24];
 			
-	// Check against airports.csv to determine if in Continental U.S.	
-	if (!origin.equals("NA") && !origin.equals("Origin")) {
-	    String originInfo = airportsData.get(origin);
-	    if (originInfo != null) {
-		String[] originInfoArr = originInfo.split(",");
-		String state = originInfoArr[3].replaceAll("^\"|\"$", "");
-		if (!state.equals("AK") && !state.equals("HI")) {
-		    String airportInfo = originInfoArr[1].replaceAll("^\"|\"$", "") + ",1";
-		    context.write(new Text(year), new Text(airportInfo));
-		}
-	    } 
-	}
-	
-	if (!dest.equals("NA") && !dest.equals("Dest")) {
-	    String destInfo = airportsData.get(dest);
-	    if (destInfo != null) {
-		String[] destInfoArr = destInfo.split(",");
-		String state = destInfoArr[3].replaceAll("^\"|\"$", "");
-		if (!state.equals("AK") && !state.equals("HI")) {
-		    String airportInfo = destInfoArr[1].replaceAll("^\"|\"$", "") + ",1";
-		    context.write(new Text(year), new Text(airportInfo));		
-		}
+	// Check against carriers.csv to determine CarrierName	
+	if (!uniqueCarrier.equals("NA") && !uniqueCarrier.equals("UniqueCarrier")) {
+	    String carrierName = carrierData.get(uniqueCarrier);
+	    if (carrierInfo != null) {
+		String delayInfo = "1," + carrierDelay;
+		context.write(new Text(carrierName), new Text(delayInfo));		
 	    }
 	}
 	
