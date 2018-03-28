@@ -32,7 +32,7 @@ public class Q4Mapper extends Mapper<LongWritable, Text, Text, Text> {
 	    reader.readLine();
 	    String carrierRecord = reader.readLine();
 	    while (carrierRecord != null) {
-		String[] lineData = carrierRecord.split(",").replaceAll("^\"|\"$", "");
+		String[] lineData = carrierRecord.replaceAll("^\"|\"$", "").split(",");
 		carrierData.put(lineData[0], lineData[1]);
 		carrierRecord = reader.readLine();
 	    }
@@ -57,7 +57,7 @@ public class Q4Mapper extends Mapper<LongWritable, Text, Text, Text> {
 	// Check against carriers.csv to determine CarrierName	
 	if (!uniqueCarrier.equals("NA") && !uniqueCarrier.equals("UniqueCarrier")) {
 	    String carrierName = carrierData.get(uniqueCarrier);
-	    if (carrierInfo != null) {
+	    if (carrierName != null) {
 		String delayInfo = "1," + carrierDelay;
 		context.write(new Text(carrierName), new Text(delayInfo));		
 	    }

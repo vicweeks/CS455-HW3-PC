@@ -48,14 +48,7 @@ public class Q3Reducer extends Reducer<Text, Text, Text, IntWritable> {
 		airportSums.replace(airport, currSum);
 	    } else
 		airportSums.put(airport, count);
-	    /*
-	    int currSum = -1;
-	    
-	    currSum = airportSums.putIfAbsent(airport, count);
-	    if (currSum != -1) {
-		airportSums.replace(airport, currSum, currSum + count);
-	    }
-	    */
+
         }
 	
 	Map<String, Integer> sortedSums =

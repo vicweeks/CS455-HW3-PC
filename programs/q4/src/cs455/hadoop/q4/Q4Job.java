@@ -29,7 +29,7 @@ public class Q4Job {
             // job.setCombinerClass(Q4Reducer.class);
 	    // Reducer
             job.setReducerClass(Q4Reducer.class);
-	    job.setNumReduceTasks(10);
+	    //job.setNumReduceTasks(10);
             // Outputs from the Mapper.
             job.setMapOutputKeyClass(Text.class);
             job.setMapOutputValueClass(Text.class);
@@ -41,7 +41,7 @@ public class Q4Job {
             // path to input in HDFS
             FileInputFormat.addInputPath(job, new Path("/data/main"));
             // path to output in HDFS
-            FileOutputFormat.setOutputPath(job, new Path("/home/output-4/"));
+            FileOutputFormat.setOutputPath(job, new Path("/home/output-4/CarrierDelays"));
             // Block until the job is completed.
             System.exit(job.waitForCompletion(true) ? 0 : 1);
         } catch (IOException e) {
