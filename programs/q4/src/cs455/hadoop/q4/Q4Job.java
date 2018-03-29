@@ -3,6 +3,7 @@ package cs455.hadoop.q4;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -32,7 +33,7 @@ public class Q4Job {
 	    //job.setNumReduceTasks(10);
             // Outputs from the Mapper.
             job.setMapOutputKeyClass(Text.class);
-            job.setMapOutputValueClass(Text.class);
+            job.setMapOutputValueClass(IntWritable.class);
             // Outputs from Reducer. It is sufficient to set only the following two properties
             // if the Mapper and Reducer has same key and value types. It is set separately for
             // elaboration.
@@ -41,7 +42,7 @@ public class Q4Job {
             // path to input in HDFS
             FileInputFormat.addInputPath(job, new Path("/data/main"));
             // path to output in HDFS
-            FileOutputFormat.setOutputPath(job, new Path("/home/output-4/CarrierDelays"));
+            FileOutputFormat.setOutputPath(job, new Path("/home/output-4/"));
             // Block until the job is completed.
             System.exit(job.waitForCompletion(true) ? 0 : 1);
         } catch (IOException e) {

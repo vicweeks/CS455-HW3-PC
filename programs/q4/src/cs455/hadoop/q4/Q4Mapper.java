@@ -2,6 +2,7 @@ package cs455.hadoop.q4;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.fs.Path;
 
@@ -13,17 +14,17 @@ import java.util.HashMap;
 
 /*
  * Mapper: Reads line by line (one line is one record with 29 comma-separated fields), 
- * Extracts Year from index 1, UniqueCarrier from index 9, and CarrierDelay from index 25
+ * Extracts UniqueCarrier from index 9 and CarrierDelay from index 25
  * Compares UniqueCarrier with carriers.csv table to extract carrier name
  * Emits <CarrierName, (DelayCount,DelayTime)> pairs 
  */
-public class Q4Mapper extends Mapper<LongWritable, Text, Text, Text> {
+public class Q4Mapper extends Mapper<LongWritable, Text, Text, IntWritable> {
 
     Map<String, String> carrierData = new HashMap<String, String>(); // Store data with <Code, Description>
     
     @Override
     public void setup(
-	Mapper<LongWritable, Text, Text, Text>.Context context)
+	Mapper<LongWritable, Text, Text, IntWritable>.Context context)
 	throws IOException, InterruptedException {
 
 	if (context.getCacheFiles() != null && context.getCacheFiles().length > 0) {
@@ -32,8 +33,8 @@ public class Q4Mapper extends Mapper<LongWritable, Text, Text, Text> {
 	    reader.readLine();
 	    String carrierRecord = reader.readLine();
 	    while (carrierRecord != null) {
-		String[] lineData = carrierRecord.replaceAll("^\"|\"$", "").split(",");
-		carrierData.put(lineData[0], lineData[1]);
+		String[] lineData = carrierRecord.split(",");
+		carrierData.put(lineData[0].replaceAll("^\"|\"$", ""), lineData[1].replaceAll("^\"|\"$", ""));
 		carrierRecord = reader.readLine();
 	    }
 	}
@@ -50,19 +51,22 @@ public class Q4Mapper extends Mapper<LongWritable, Text, Text, Text> {
 	if (record.length != 29)
 	    return;
 
-	String year = record[0];
 	String uniqueCarrier = record[8];
-	String carrierDelay = record[24];
-			
-	// Check against carriers.csv to determine CarrierName	
-	if (!uniqueCarrier.equals("NA") && !uniqueCarrier.equals("UniqueCarrier")) {
-	    String carrierName = carrierData.get(uniqueCarrier);
-	    if (carrierName != null) {
-		String delayInfo = "1," + carrierDelay;
-		context.write(new Text(carrierName), new Text(delayInfo));		
-	    }
-	}
+        String carrierDelay = record[24];
 	
+	if(!carrierDelay.equals("NA") && !carrierDelay.equals("CarrierDelay")) {   
+	    int delay = Integer.parseInt(carrierDelay);
+	    if (delay <= 0)
+		return;
+	    // Check against carriers.csv to determine CarrierName	
+	    if (!uniqueCarrier.equals("NA") && !uniqueCarrier.equals("UniqueCarrier")) {
+		String carrierName = carrierData.get(uniqueCarrier);
+		if (carrierName != null) {		   
+		    context.write(new Text(carrierName), new IntWritable(delay));		
+		} else
+		    context.write(new Text(uniqueCarrier), new IntWritable(delay));
+	    } 
+	}
     }
     
 }
