@@ -55,16 +55,17 @@ public class Q6Mapper extends Mapper<LongWritable, Text, Text, IntWritable> {
 
 	String origin = record[16];
 	String weatherDelay = record[25];
-
+     
 	// Check if there was a weatherDelay
 	if (origin.equals("NA") || origin.equals("Origin")
 	    ||weatherDelay.equals("NA") || weatherDelay.equals("WeatherDelay"))
 	    return;
 
+	context.write(new Text(origin), new IntWritable(1));	
 	String city = airportsData.get(origin);
 	if (city != null) {		    
-	    int delay = Integer.toString(weatherDelay);	    
-	    context.write(new Text(city), new IntWritable(delay));	    
+	    //int delay = Integer.parseInt(weatherDelay);	    
+	    context.write(new Text(city), new IntWritable(1));	    
 	}
 	
     }

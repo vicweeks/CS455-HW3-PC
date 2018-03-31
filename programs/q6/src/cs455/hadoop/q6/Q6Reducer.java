@@ -1,9 +1,8 @@
-package cs455.hadoop.q3;
+package cs455.hadoop.q6;
 
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
 import java.io.IOException;
 import java.util.Map;
@@ -14,65 +13,51 @@ import java.util.stream.Collectors;
 
 /*
  * Reducer: Input to the reducer is the output from the mapper. 
- * It receives <year, (airportName, sum)> pairs.
- * Keeps record of top 10 sums in map <airportName, sum>
- * Emits top 10 sums as <airportName, sum> pairs in files corresponding to the year.
+ * It receives <City, WeatherDelay> pairs.
+ * Keeps records of Citys and total delays in map
+ * Sorts records in cleanup.
+ * Emits top 10 cities with the most delays.
  */
-public class Q3Reducer extends Reducer<Text, Text, Text, IntWritable> {
-    private MultipleOutputs mos;
+public class Q6Reducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+    Map<Text, Integer> cityDelays;
 
-    String generateFileName(Text k) {
-	return "/home/output-3/" + k.toString()+"Output";
-    }
-    
     @Override
     public void setup(Context context) throws IOException, InterruptedException {
 	super.setup(context);
-	mos = new MultipleOutputs(context);
+        cityDelays = new HashMap<Text, Integer>();
     }
     
     @Override
-    protected void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
-        Map<String, Integer> airportSums = new HashMap<String, Integer>();
+    protected void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
+	int count = 0;
 	
         // calculate total count
-        for(Text val : values){
-	    String[] value = val.toString().split(",");
-	    if (value.length != 2)
-		continue;
-	    String airport = value[0];
-	    int count = Integer.parseInt(value[1]);
-	    if (airportSums.containsKey(airport)) {
-		int currSum = airportSums.get(airport);
-		currSum += count;
-		airportSums.replace(airport, currSum);
-	    } else
-		airportSums.put(airport, count);
-
+        for(IntWritable val : values){
+	    count += val.get();
         }
-	
-	Map<String, Integer> sortedSums =
-	    airportSums.entrySet().stream()
-	    .sorted(Map.Entry.comparingByValue((Integer o1, Integer o2) -> o2.compareTo(o1)))
-	    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
-				      (e1, e2) -> e1, LinkedHashMap::new));
 
-	Set<Map.Entry<String, Integer>> output = sortedSums.entrySet();
-	
-	// write to file named for Corresponding year
-	int counter = 0;
-	for (Map.Entry<String, Integer> entry : output) {
-	    mos.write(new Text(entry.getKey()), new IntWritable(entry.getValue()), generateFileName(key));
-	    if (counter >= 9)
-		return;
-	    else
-		counter++;
-	}
+	cityDelays.put(new Text(key), count);
     }
 
     @Override
     public void cleanup(Context context) throws IOException, InterruptedException {
-	mos.close();    
+
+	// Delay Count sort and print	
+	Map<Text, Integer> sortedCounts =
+	    cityDelays.entrySet().stream()
+	    .sorted(Map.Entry.comparingByValue((Integer o1, Integer o2) -> o2.compareTo(o1)))
+	    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+				      (e1, e2) -> e1, LinkedHashMap::new));
+
+	int counter = 0;
+	for (Text key: cityDelays.keySet()) {
+	    if (counter++ == 9) {
+		super.cleanup(context);
+		return;
+	    }
+	    context.write(key, new IntWritable(cityDelays.get(key)));
+	}
+	
 	super.cleanup(context);    
     }
 }
