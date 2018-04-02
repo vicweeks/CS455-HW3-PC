@@ -50,12 +50,12 @@ public class Q6Reducer extends Reducer<Text, IntWritable, Text, IntWritable> {
 				      (e1, e2) -> e1, LinkedHashMap::new));
 
 	int counter = 0;
-	for (Text key: cityDelays.keySet()) {
-	    if (counter++ == 9) {
+	for (Text key: sortedCounts.keySet()) {
+	    if (counter++ == 10) {
 		super.cleanup(context);
 		return;
 	    }
-	    context.write(key, new IntWritable(cityDelays.get(key)));
+	    context.write(key, new IntWritable(sortedCounts.get(key)));
 	}
 	
 	super.cleanup(context);    

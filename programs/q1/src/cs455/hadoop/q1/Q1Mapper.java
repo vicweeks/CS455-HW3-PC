@@ -9,7 +9,7 @@ import java.io.IOException;
 
 /*
  * Mapper: Reads line by line (one line is one record with 29 comma-separated fields), 
- * Extracts DepTime from index 5, DayOfWeek from index 4, and Month from index 2. 
+ * Extracts CRSDepTime from index 6, DayOfWeek from index 4, and Month from index 2. 
  * Extracts ArrDelay from index 15 and DepDelay from index 16. 
  * Emits <"HOUR:"(hour), meanDelay>, <"DAY:"(day), meanDelay>, <"MONTH:"(month), meanDelay> pairs.
  */
@@ -21,7 +21,7 @@ public class Q1Mapper extends Mapper<LongWritable, Text, Text, DoubleWritable> {
 	if (record.length != 29)
 	    return;
 
-	String depTime = record[4];
+	String crsDepTime = record[5];
 	String dayOfWeek = record[3];
 	String month = record[1];
 	String arrDelay = record[14];
@@ -40,15 +40,9 @@ public class Q1Mapper extends Mapper<LongWritable, Text, Text, DoubleWritable> {
 	DoubleWritable delay = new DoubleWritable(meanDelay);
 	
 	// write output for hour
-	if (!depTime.equals("NA") && !depTime.equals("DepTime")) {
-	    String hour = "24"; // Allows parsing as int
-	    if (depTime.length() == 2) // midnight
-		hour = "00";
-	    else if (depTime.length() == 3) // (01,09)
-		hour = "0" + depTime.substring(0,1);
-	    else if (depTime.length() == 4) // (10,23)
-		hour = depTime.substring(0,2);
-	    int hourInt = Integer.parseInt(hour);
+	if (!crsDepTime.equals("NA") && !crsDepTime.equals("CRSDepTime")) {
+	    String hour = "";
+	    int hourInt = Integer.parseInt(crsDepTime);
 	    hourInt = hourInt % 24;
 	    if (hourInt == 0)
 		hour = "00";
