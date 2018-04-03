@@ -52,7 +52,8 @@ public class HW3Reducer extends Reducer<Text, Text, Text, Text> {
 	    reduceQ3(q, ident, values, context);
 	else if (q.equals("Q4"))
 	    reduceQ4(q, ident, values, context);
-	
+	else if (q.equals("Q5"))
+	    reduceQ5(q, ident, values, context);
     }
 
     private void reduceQ1(String q, String ident, Iterable<Text> values, Context context) throws IOException, InterruptedException {
@@ -138,6 +139,24 @@ public class HW3Reducer extends Reducer<Text, Text, Text, Text> {
 
         q4DelayCount.put(new Text(ident), numEntries);	    	
 	q4MeanDelay.put(new Text(ident), mean);
+    }
+
+    private void reduceQ5(String q, String ident, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+	int numEntries = 0;
+        double delaySum = 0.0;
+
+	for(Text val : values) {
+	    String[] valueInputs = val.toString().split(",");
+	    delaySum += Double.parseDouble(valueInputs[0]);
+	    numEntries += Integer.parseInt(valueInputs[1]);
+	}
+
+	double meanToTruncate = delaySum / numEntries;
+	double mean = BigDecimal.valueOf(meanToTruncate).setScale(3, RoundingMode.HALF_UP).doubleValue();
+
+	String output = Integer.toString(numEntries) + "    " + Double.toString(mean);
+	    
+	mos.write(new Text(ident), new Text(output), "/home/HW3/Q5Outputs/PlaneAgeDelay");
     }
     
     @Override
