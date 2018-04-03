@@ -2,7 +2,6 @@ package cs455.hadoop.hw3;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
@@ -29,8 +28,8 @@ public class HW3Job {
 	    job.addCacheFile(new Path("/data/supplementary/plane-data.csv").toUri());
 	    // Mapper
             job.setMapperClass(HW3Mapper.class);
-	    // Combiner. None used for this case.	    
-            //job.setCombinerClass(Q1Reducer.class);
+	    // Combiner	    
+            job.setCombinerClass(HW3Combiner.class);
 	    // Reducer
             job.setReducerClass(HW3Reducer.class);
 	    job.setNumReduceTasks(10);
@@ -41,12 +40,11 @@ public class HW3Job {
             // if the Mapper and Reducer has same key and value types. It is set separately for
             // elaboration.
             job.setOutputKeyClass(Text.class);
-            job.setOutputValueClass(DoubleWritable.class);
+            job.setOutputValueClass(Text.class);
             // path to input in HDFS
             FileInputFormat.addInputPath(job, new Path("/data/main"));
             // path to output in HDFS
-            FileOutputFormat.setOutputPath(job, new Path("/home/HW3-Outputs"));
-	    //MultipleOutputs.addNamedOutput(job, "file", FileOutputFormat.class, Text.class, IntWritable.class);
+            FileOutputFormat.setOutputPath(job, new Path("/home/HW3"));	    
             // Block until the job is completed.
             System.exit(job.waitForCompletion(true) ? 0 : 1);
         } catch (IOException e) {

@@ -3,6 +3,7 @@ package cs455.hadoop.hw3;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.fs.Path;
 
 import java.io.IOException;
 import java.io.BufferedReader;
@@ -12,7 +13,12 @@ import java.util.HashMap;
 
 /*
  * Mapper: Reads line by line (one line is one record with 29 comma-separated fields). 
- * 
+ * Extracts data needed for Q1-Q6.
+ * Q1-Q2: Emits <"HOUR:"(hour), meanDelay>, <"DAY:"(day), meanDelay>, <"MONTH:"(month), meanDelay> pairs.
+ * Q3: Emits <year, (airportName, sum)> pairs.
+ * Q4:
+ * Q5:
+ * Q6:
  */
 public class HW3Mapper extends Mapper<LongWritable, Text, Text, Text> {
 
@@ -39,7 +45,7 @@ public class HW3Mapper extends Mapper<LongWritable, Text, Text, Text> {
 	    
 	    String carrierRecord = carriersFile.readLine();
 	    while((carrierRecord = carriersFile.readLine()) != null) {
-		String[] lineData = carriersFile.split(",");
+		String[] lineData = carrierRecord.split(",");
 		carriersData.put(lineData[0].replaceAll("^\"|\"$", ""), lineData[1].replaceAll("^\"|\"$", ""));
 	    }
 
@@ -52,7 +58,7 @@ public class HW3Mapper extends Mapper<LongWritable, Text, Text, Text> {
 		String manuYear = lineData[8];
 		if (tailNum.equals("NA") || tailNum.equals("None") || manuYear.equals("NA") || manuYear.equals("None"))
 		    continue;
-		planesData.put(tailNum, manuYear);
+		planeData.put(tailNum, manuYear);
 	    }
 	    
 	}
@@ -81,27 +87,134 @@ public class HW3Mapper extends Mapper<LongWritable, Text, Text, Text> {
 	String carrierDelay = record[24];
 	String weatherDelay = record[25];
 
-	// output relevant data for Q1 & Q2
-	// <Q1, "crsDepTime,dayOfWeek,month,arrDelay,depDelay">
-	String q1 = crsDepTime + "," + dayOfWeek + "," + month + "," + arrDelay + "," + depDelay;
-	context.write(new Text("Q1"), new Text(q1));
-
-	// output relevant data for Q3
-	// <Q3, "year,origin,dest,airportName">
-	if (!origin.equals("NA") && !origins.equals("Origin")) {
-	    String originInfo = airportsData.get(origin);
-	    if (originInfo != null) {
-		String originInfoArr = originInfo.split(",");
-		String state = originInfoArr[3];
-		if (!state.equals("AK") && !state.equals("HI")) {
-		    String q3 = year + "," + origin + "," + dest + "," + originInfoArr[1];
-		    context.write(new Text("Q3"), new Text(q3));
-		}
+	String meanDelay = "NA";
+        if (!arrDelay.equals("ArrDelay") && !depDelay.equals("DepDelay"))
+	    meanDelay = getMeanDelay(arrDelay, depDelay);
+	
+	// get and write Q1 and Q2 output
+	if (!meanDelay.equals("NA")) {
+	    String hourOutput = getHourDelay(crsDepTime);
+	    if (!hourOutput.equals("NA"))
+		context.write(new Text("Q1," + hourOutput), new Text(meanDelay + ",1"));
+	  
+	    String dayOutput = getDayDelay(dayOfWeek);
+	    if (!dayOutput.equals("NA")) {
+		context.write(new Text("Q1," + dayOutput), new Text(meanDelay + ",1"));
 	    }
+
+	    String monthOutput = getMonthDelay(month);
+	    if (!monthOutput.equals("NA"))		
+		context.write(new Text("Q1," + monthOutput), new Text(meanDelay + ",1"));	   
 	}
 
-	//TODO Q3 dest
 	
+	// get and write Q3 output
+	if (!origin.equals("NA") && !origin.equals("Origin")) {
+	    String originOutput = getQ3Delay(origin);
+	    if (!originOutput.equals("NA"))
+		context.write(new Text("Q3," + year), new Text(originOutput));
+	}
+
+	if (!dest.equals("NA") && !dest.equals("Dest")) {
+	    String destOutput = getQ3Delay(dest);
+	    if (!destOutput.equals("NA"))
+		context.write(new Text("Q3," + year), new Text(destOutput));
+	}	
+
+
+	// get and write Q4 output
+	if (!carrierDelay.equals("NA") && !carrierDelay.equals("CarrierDelay")) {
+	    int delay = Integer.parseInt(carrierDelay);
+	    if (delay > 0) {
+		String carrierName = getQ4Delay(uniqueCarrier);
+		if (!carrierName.equals("NA"))
+		    context.write(new Text("Q4," + carrierName), new Text(carrierDelay + ",1"));
+	    }
+	}
+	
+    }
+
+    private String getMeanDelay(String arrDelay, String depDelay) {
+	// calculate mean delay
+	int arrDelayInt = 0;
+	int depDelayInt = 0;
+	
+	if (!arrDelay.equals("NA"))
+	    arrDelayInt = Integer.parseInt(arrDelay);
+	if (!depDelay.equals("NA"))
+	    depDelayInt = Integer.parseInt(depDelay);
+	if (arrDelayInt <= 0 && depDelayInt <= 0)
+	    return "NA"; // no delay
+	else if (arrDelayInt <= 0)
+	    return Double.toString(depDelayInt * 1.0); // only DepDelay
+	else if (depDelayInt <= 0)
+	    return Double.toString(arrDelayInt * 1.0); // only ArrDelay
+
+	// if both arr and dep delay are positive, return mean
+	double meanDelay = (arrDelayInt + depDelayInt) / 2.0;
+	return Double.toString(meanDelay);
+    }
+    
+    private String getHourDelay(String crsDepTime) {
+	// write output for hour
+	if (!crsDepTime.equals("NA") && !crsDepTime.equals("CRSDepTime")) {
+	    String hour = "";
+	    int hourInt = Integer.parseInt(crsDepTime);
+	    hourInt = hourInt % 24;
+	    if (hourInt == 0)
+		hour = "00";
+	    else if (hourInt > 0 && hourInt < 10)
+		hour = "0" + Integer.toString(hourInt);
+	    else if (hourInt >= 10)
+		hour = Integer.toString(hourInt);
+	    hour = "HOUR:" + hour;
+	    return hour;
+	} else
+	    return "NA";	    
+    }
+
+    private String getDayDelay(String dayOfWeek) {
+	// write output for day	
+	if (dayOfWeek.length() == 1) { // 1 (Monday) - 7 (Sunday)
+	    dayOfWeek = "DAY:" + dayOfWeek;
+	    return dayOfWeek;
+	} else
+	    return "NA";
+    }
+
+    private String getMonthDelay(String month) {
+	// write output for month
+	if (!month.equals("NA") && !month.equals("Month")) {
+	    if (month.length() == 1) // (1-9)
+		month = "0" + month;
+	    month = "MONTH:" + month;
+	    return month;
+	} else
+	    return "NA";
+    }
+
+    private String getQ3Delay(String airportCode) {
+	String airportInfo = airportsData.get(airportCode);
+	if (airportInfo != null) {
+		String[] airportInfoArr = airportInfo.split(",");
+		String state = airportInfoArr[2];
+		if (!state.equals("AK") && !state.equals("HI")) {
+		    String airportName = airportInfoArr[0] + ",1";
+		    return airportName;
+		}
+	}
+	return "NA";
+    }
+
+    private String getQ4Delay(String uniqueCarrier) {
+	if (!uniqueCarrier.equals("NA") && !uniqueCarrier.equals("UniqueCarrier")) {
+		String carrierName = carriersData.get(uniqueCarrier);
+		if (carrierName != null)		   
+		    return carrierName;		
+		else
+		    return "NA";		
+	}
+	return "NA";
     }
     
 }
