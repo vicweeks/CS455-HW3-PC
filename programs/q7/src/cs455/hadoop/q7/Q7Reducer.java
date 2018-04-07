@@ -14,50 +14,45 @@ import java.util.stream.Collectors;
 /*
  * Reducer: Input to the reducer is the output from the mapper. 
  * It receives <EventType, sum> pairs.
- * Emits sums of each EventType.
+ * Emits sorted sums of each EventType.
  */
 public class Q7Reducer extends Reducer<Text, IntWritable, Text, IntWritable> {
-    //Map<Text, Integer> cityDelays;
+    Map<Text, Integer> weatherDelays;
 
     @Override
     public void setup(Context context) throws IOException, InterruptedException {
 	super.setup(context);
-        //cityDelays = new HashMap<Text, Integer>();
+        weatherDelays = new HashMap<Text, Integer>();
     }
     
     @Override
     protected void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
-	int sum = 0;
+	int count = 0;
 	
         // calculate total count
         for(IntWritable val : values){
-	    sum += val.get();
+	    count += val.get();
         }
 
-	context.write(key, new IntWritable(sum));
+	//context.write(key, new IntWritable(sum));
 	
-	//cityDelays.put(new Text(key), count);
+	weatherDelays.put(new Text(key), count);
     }
 
     @Override
     public void cleanup(Context context) throws IOException, InterruptedException {
-	/*
+	
 	// Delay Count sort and print	
 	Map<Text, Integer> sortedCounts =
-	    cityDelays.entrySet().stream()
+	    weatherDelays.entrySet().stream()
 	    .sorted(Map.Entry.comparingByValue((Integer o1, Integer o2) -> o2.compareTo(o1)))
 	    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
 				      (e1, e2) -> e1, LinkedHashMap::new));
 
-	int counter = 0;
 	for (Text key: sortedCounts.keySet()) {
-	    if (counter++ == 10) {
-		super.cleanup(context);
-		return;
-	    }
 	    context.write(key, new IntWritable(sortedCounts.get(key)));
 	}
-	*/
+	
 	super.cleanup(context);    
     }
 }

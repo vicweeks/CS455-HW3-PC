@@ -41,7 +41,7 @@ public class Q7Job {
             job.setOutputKeyClass(Text.class);
             job.setOutputValueClass(IntWritable.class);
             // path to input in HDFS
-            FileInputFormat.addInputPath(job, new Path("/data/main/"));
+            FileInputFormat.addInputPath(job, new Path("/data/main"));
             // path to output in HDFS
             FileOutputFormat.setOutputPath(job, new Path("/home/Q7Output/"));
             // Block until the job is completed.

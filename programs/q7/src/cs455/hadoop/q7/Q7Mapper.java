@@ -38,7 +38,7 @@ public class Q7Mapper extends Mapper<LongWritable, Text, Text, IntWritable> {
 	    while ((airportRecord = airportsReader.readLine()) != null) {
 		String[] lineData = airportRecord.split(",");
 		String iata = lineData[0].replaceAll("^\"|\"$", "");
-		String state = lineData[4].replaceAll("^\"|\"$", "");
+		String state = lineData[3].replaceAll("^\"|\"$", "");
 		airportData.put(iata, state);
 	    }
 
@@ -83,7 +83,8 @@ public class Q7Mapper extends Mapper<LongWritable, Text, Text, IntWritable> {
 	    String eventType = weatherData.get(compareKey);
 	    if (eventType != null)
 		context.write(new Text(eventType), new IntWritable(1));	    
-	} 	
+	}
+	
     }
     
 }
