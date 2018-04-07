@@ -14,11 +14,11 @@ import java.util.HashMap;
 /*
  * Mapper: Reads line by line (one line is one record with 29 comma-separated fields). 
  * Extracts data needed for Q1-Q6.
- * Q1-Q2: Emits <"HOUR:"(hour), meanDelay>, <"DAY:"(day), meanDelay>, <"MONTH:"(month), meanDelay> pairs.
+ * Q1-Q2: Emits <"HOUR:"(hour), (meanDelay,1)>, <"DAY:"(day), (meanDelay,1)>, <"MONTH:"(month), (meanDelay,1)> pairs.
  * Q3: Emits <year, (airportName, sum)> pairs.
- * Q4:
- * Q5:
- * Q6:
+ * Q4: Emits <carrierName, (meanDelay,1)> pairs.
+ * Q5: Emits <planeAge, (meanDelay,1)> pairs
+ * Q6: Emits <city, (weatherDelay,1)> pairs
  */
 public class HW3Mapper extends Mapper<LongWritable, Text, Text, Text> {
 
@@ -144,6 +144,15 @@ public class HW3Mapper extends Mapper<LongWritable, Text, Text, Text> {
 		context.write(new Text("Q5," + planeDelayArr[1]), new Text(meanDelay + ",1"));
 	    }
 	}
+
+	// get and write Q6 output
+	if (!origin.equals("NA") && !origin.equals("Origin")
+	    && !weatherDelay.equals("NA") && !weatherDelay.equals("WeatherDelay")) {
+	    String city = getQ6Delay(origin);
+	    if (!city.equals("NA")) {
+		context.write(new Text("Q6," + city), new Text(weatherDelay + ",1"));
+	    }
+	}
     }
 
     private String getMeanDelay(String arrDelay, String depDelay) {
@@ -258,6 +267,18 @@ public class HW3Mapper extends Mapper<LongWritable, Text, Text, Text> {
 		ageRange = Integer.toString(age);
 
 	    return ageStatus + ageRange;
+	}
+	return "NA";
+    }
+
+    private String getQ6Delay(String origin) {
+	String airportsInfo  = airportsData.get(origin);
+	if (airportsInfo != null) {
+	    String[] airportsInfoArr = airportsInfo.split(",");
+	    String city = airportsInfoArr[1];
+	    if (city != null) {
+		return city;
+	    }
 	}
 	return "NA";
     }

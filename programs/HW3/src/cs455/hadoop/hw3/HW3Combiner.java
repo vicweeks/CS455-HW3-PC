@@ -15,7 +15,7 @@ import java.math.RoundingMode;
  * Q3: Combines into <key, "airportName, count"> pairs
  * Q4: Combines into <key, "sumDelay, count"> pairs
  * Q5: Combines into <key, "sumDelay, count"> pairs
- * Q6:
+ * Q6: Combines into <key, "sumDelay, count"> pairs
  */
 public class HW3Combiner extends Reducer<Text, Text, Text, Text> {
 
@@ -32,6 +32,8 @@ public class HW3Combiner extends Reducer<Text, Text, Text, Text> {
 	else if (q.equals("Q4"))
 	    reduceQ1(key, values, context);
 	else if (q.equals("Q5"))
+	    reduceQ1(key, values, context);
+	else if (q.equals("Q6"))
 	    reduceQ1(key, values, context);
     }
 
