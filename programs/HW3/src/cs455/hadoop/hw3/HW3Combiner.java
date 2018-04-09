@@ -34,7 +34,7 @@ public class HW3Combiner extends Reducer<Text, Text, Text, Text> {
 	else if (q.equals("Q5"))
 	    reduceQ1(key, values, context);
 	else if (q.equals("Q6"))
-	    reduceQ1(key, values, context);
+	    reduceQ6(key, values, context);
     }
 
     private void reduceQ1(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
@@ -77,6 +77,18 @@ public class HW3Combiner extends Reducer<Text, Text, Text, Text> {
 	    context.write(key, new Text(airport + "," + airportSums.get(airport)));
 	}
        
+    }
+
+    private void reduceQ6(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+	int numEntries = 0;
+	
+	// calculate numEntries
+	for(Text val : values) {
+	    numEntries += Integer.parseInt(val.toString());
+	}
+
+	context.write(key, new Text(Integer.toString(numEntries)));
+	
     }
      
 }

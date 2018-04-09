@@ -17,17 +17,16 @@ import java.util.stream.Collectors;
 /*
  * Reducer: Input to the reducer is the output from the mapper. 
  * Q1-Q2: Emits means as <key, meanDelay    delayCount> pairs into corresponding files (HourOutput, DayOutput, MonthOutput).
- * Q3: Emits as <> pairs
- * Q4:
- * Q5:
- * Q6:
+ * Q3: Emits as <airportName, sumFlights> pairs in files corresponding to the year
+ * Q4: Emits as <carrierName, delayCount    meanDelay> pairs in files sorted by delayCount or meanDelay
+ * Q5: Emits as <planeAge, numDelays    meanDelay> pairs
+ * Q6: Emits as <cityName, numDelays> pairs
  */
 public class HW3Reducer extends Reducer<Text, Text, Text, Text> {
     private MultipleOutputs mos;
     Map<Text, Integer> q4DelayCount;
     Map<Text, Double> q4MeanDelay;
     Map<Text, Integer> q6DelayCount;
-    Map<Text, Double> q6MeanDelay;
     
     String generateFileName(String k) {
 	return "/home/HW3/Q3Outputs/" + k+"Output";
@@ -40,7 +39,6 @@ public class HW3Reducer extends Reducer<Text, Text, Text, Text> {
 	q4DelayCount = new HashMap<Text, Integer>();
 	q4MeanDelay = new HashMap<Text, Double>();
 	q6DelayCount = new HashMap<Text, Integer>();
-	q6MeanDelay = new HashMap<Text, Double>();
     }
 
     @Override
@@ -167,19 +165,12 @@ public class HW3Reducer extends Reducer<Text, Text, Text, Text> {
 
     private void reduceQ6(String q, String ident, Iterable<Text> values, Context context) throws IOException, InterruptedException {
 	int numEntries = 0;
-	double delaySum = 0.0;
 
 	for (Text val : values) {
-	    String[] valueInputs = val.toString().split(",");
-	    delaySum += Double.parseDouble(valueInputs[0]);
-	    numEntries += Integer.parseInt(valueInputs[1]);
+	    numEntries += Integer.parseInt(val.toString());
 	}
 
-	double meanToTruncate = delaySum / numEntries;
-	double mean = BigDecimal.valueOf(meanToTruncate).setScale(3, RoundingMode.HALF_UP).doubleValue();
-
 	q6DelayCount.put(new Text(ident), numEntries);
-	q6MeanDelay.put(new Text(ident), mean);
     }
     
     @Override
@@ -220,28 +211,11 @@ public class HW3Reducer extends Reducer<Text, Text, Text, Text> {
 	    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
 				      (e1, e2) -> e1, LinkedHashMap::new));
 
-	// Mean Delay sort
-	Map<Text, Double> q6SortedMeans =
-	    q6MeanDelay.entrySet().stream()
-	    .sorted(Map.Entry.comparingByValue((Double o1, Double o2) -> o2.compareTo(o1)))
-	    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
-				      (e1, e2) -> e1, LinkedHashMap::new));
-	
 	// Delay Count print
 	int counter = 0;
 	for (Text key: q6SortedCounts.keySet()) {
 	    if (counter++ < 10) {
-		String output = Integer.toString(q6SortedCounts.get(key)) + "    " + Double.toString(q6SortedMeans.get(key));
-		mos.write(key, new Text(output), "/home/HW3/Q6Outputs/WeatherDelayCount");
-	    }
-	}
-	
-	// Mean Delay print
-	counter = 0;
-	for (Text key: q6SortedMeans.keySet()) {
-	    if (counter++ < 10) {
-	    	String output = Integer.toString(q6SortedCounts.get(key)) + "    " + Double.toString(q6SortedMeans.get(key));
-		mos.write(key, new Text(output), "/home/HW3/Q6Outputs/WeatherMeanDelay");
+		mos.write(key, new Text(Integer.toString(q6SortedCounts.get(key))), "/home/HW3/Q6Outputs/WeatherDelays");
 	    }
 	}
 	

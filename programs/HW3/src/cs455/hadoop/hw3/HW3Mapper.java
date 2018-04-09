@@ -18,7 +18,7 @@ import java.util.HashMap;
  * Q3: Emits <year, (airportName, sum)> pairs.
  * Q4: Emits <carrierName, (meanDelay,1)> pairs.
  * Q5: Emits <planeAge, (meanDelay,1)> pairs
- * Q6: Emits <city, (weatherDelay,1)> pairs
+ * Q6: Emits <city, weatherDelayOccurrance> pairs
  */
 public class HW3Mapper extends Mapper<LongWritable, Text, Text, Text> {
 
@@ -147,10 +147,11 @@ public class HW3Mapper extends Mapper<LongWritable, Text, Text, Text> {
 
 	// get and write Q6 output
 	if (!origin.equals("NA") && !origin.equals("Origin")
+	    && !depDelay.equals("NA") && !depDelay.equals("DepDelay")
 	    && !weatherDelay.equals("NA") && !weatherDelay.equals("WeatherDelay")) {
-	    String city = getQ6Delay(origin);
+	    String city = getQ6Delay(origin, depDelay, weatherDelay);
 	    if (!city.equals("NA")) {
-		context.write(new Text("Q6," + city), new Text(weatherDelay + ",1"));
+		context.write(new Text("Q6," + city), new Text("1"));
 	    }
 	}
     }
@@ -271,7 +272,11 @@ public class HW3Mapper extends Mapper<LongWritable, Text, Text, Text> {
 	return "NA";
     }
 
-    private String getQ6Delay(String origin) {
+    private String getQ6Delay(String origin, String depDelay, String weatherDelay) {
+	int depDelayInt = Integer.parseInt(depDelay);
+	int weatherDelayInt = Integer.parseInt(weatherDelay);
+	if (depDelayInt <= 0 || weatherDelayInt <= 0)
+	    return "NA";
 	String airportsInfo  = airportsData.get(origin);
 	if (airportsInfo != null) {
 	    String[] airportsInfoArr = airportsInfo.split(",");
