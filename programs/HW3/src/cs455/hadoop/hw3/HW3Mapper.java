@@ -14,11 +14,11 @@ import java.util.HashMap;
 /*
  * Mapper: Reads line by line (one line is one record with 29 comma-separated fields). 
  * Extracts data needed for Q1-Q6.
- * Q1-Q2: Emits <"HOUR:"(hour), meanDelay>, <"DAY:"(day), meanDelay>, <"MONTH:"(month), meanDelay> pairs.
+ * Q1-Q2: Emits <"HOUR:"(hour), (meanDelay,1)>, <"DAY:"(day), (meanDelay,1)>, <"MONTH:"(month), (meanDelay,1)> pairs.
  * Q3: Emits <year, (airportName, sum)> pairs.
- * Q4:
- * Q5:
- * Q6:
+ * Q4: Emits <carrierName, (meanDelay,1)> pairs.
+ * Q5: Emits <planeAge, (meanDelay,1)> pairs
+ * Q6: Emits <city, weatherDelayOccurrance> pairs
  */
 public class HW3Mapper extends Mapper<LongWritable, Text, Text, Text> {
 
@@ -131,7 +131,29 @@ public class HW3Mapper extends Mapper<LongWritable, Text, Text, Text> {
 		    context.write(new Text("Q4," + carrierName), new Text(carrierDelay + ",1"));
 	    }
 	}
-	
+
+
+	// get and write Q5 output
+	if (!year.equals("NA") && !year.equals("Year")
+	    && !tailNum.equals("NA") && !tailNum.equals("TailNum") && !meanDelay.equals("NA")) {
+	    int flightYear = Integer.parseInt(year);
+	    String planeDelay = getQ5Delay(tailNum, flightYear);
+	    if (!planeDelay.equals("NA")) {
+		String[] planeDelayArr = planeDelay.split(",");
+		context.write(new Text("Q5," + planeDelayArr[0]), new Text(meanDelay + ",1"));
+		context.write(new Text("Q5," + planeDelayArr[1]), new Text(meanDelay + ",1"));
+	    }
+	}
+
+	// get and write Q6 output
+	if (!origin.equals("NA") && !origin.equals("Origin")
+	    && !depDelay.equals("NA") && !depDelay.equals("DepDelay")
+	    && !weatherDelay.equals("NA") && !weatherDelay.equals("WeatherDelay")) {
+	    String city = getQ6Delay(origin, depDelay, weatherDelay);
+	    if (!city.equals("NA")) {
+		context.write(new Text("Q6," + city), new Text("1"));
+	    }
+	}
     }
 
     private String getMeanDelay(String arrDelay, String depDelay) {
@@ -213,6 +235,55 @@ public class HW3Mapper extends Mapper<LongWritable, Text, Text, Text> {
 		    return carrierName;		
 		else
 		    return "NA";		
+	}
+	return "NA";
+    }
+
+    private String getQ5Delay(String tailNum, int flightYear) {
+	String manuYear = planeData.get(tailNum);
+	if (manuYear != null) {
+	    int manuYearInt = Integer.parseInt(manuYear);
+	    if (manuYearInt == 0)
+		return "NA";
+	    String ageStatus = "";	    
+	    int age = flightYear - manuYearInt;
+	    if (age < 0)
+		return "NA";
+	    if (age > 20)
+		ageStatus = "OLD,";
+	    else ageStatus = "NEW,";
+	    
+	    String ageRange = "";	    
+	    if (age < 10)
+		ageRange = "0 <= Age < 10";
+	    else if (age >= 10 && age < 20)
+		ageRange = "10 <= Age < 20";
+	    else if (age >= 20 && age < 30)
+		ageRange = "20 <= Age < 30";
+	    else if (age >= 30 && age < 40)
+		ageRange = "30 <= Age < 40";
+	    else if (age >= 40 && age < 50)
+		ageRange = "40 <= Age < 50";
+	    else if (age >= 50)
+		ageRange = Integer.toString(age);
+
+	    return ageStatus + ageRange;
+	}
+	return "NA";
+    }
+
+    private String getQ6Delay(String origin, String depDelay, String weatherDelay) {
+	int depDelayInt = Integer.parseInt(depDelay);
+	int weatherDelayInt = Integer.parseInt(weatherDelay);
+	if (depDelayInt <= 0 || weatherDelayInt <= 0)
+	    return "NA";
+	String airportsInfo  = airportsData.get(origin);
+	if (airportsInfo != null) {
+	    String[] airportsInfoArr = airportsInfo.split(",");
+	    String city = airportsInfoArr[1];
+	    if (city != null) {
+		return city;
+	    }
 	}
 	return "NA";
     }

@@ -32,7 +32,7 @@ public class HW3Job {
             job.setCombinerClass(HW3Combiner.class);
 	    // Reducer
             job.setReducerClass(HW3Reducer.class);
-	    job.setNumReduceTasks(10);
+	    //job.setNumReduceTasks(10);
             // Outputs from the Mapper.
             job.setMapOutputKeyClass(Text.class);
             job.setMapOutputValueClass(Text.class);

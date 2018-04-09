@@ -14,8 +14,8 @@ import java.math.RoundingMode;
  * Q1-Q2: Combines into <key, "sumDelay, count"> pairs
  * Q3: Combines into <key, "airportName, count"> pairs
  * Q4: Combines into <key, "sumDelay, count"> pairs
- * Q5:
- * Q6:
+ * Q5: Combines into <key, "sumDelay, count"> pairs
+ * Q6: Combines into <key, "sumDelay, count"> pairs
  */
 public class HW3Combiner extends Reducer<Text, Text, Text, Text> {
 
@@ -31,6 +31,10 @@ public class HW3Combiner extends Reducer<Text, Text, Text, Text> {
 	    reduceQ3(key, values, context);
 	else if (q.equals("Q4"))
 	    reduceQ1(key, values, context);
+	else if (q.equals("Q5"))
+	    reduceQ1(key, values, context);
+	else if (q.equals("Q6"))
+	    reduceQ6(key, values, context);
     }
 
     private void reduceQ1(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
@@ -73,6 +77,18 @@ public class HW3Combiner extends Reducer<Text, Text, Text, Text> {
 	    context.write(key, new Text(airport + "," + airportSums.get(airport)));
 	}
        
+    }
+
+    private void reduceQ6(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+	int numEntries = 0;
+	
+	// calculate numEntries
+	for(Text val : values) {
+	    numEntries += Integer.parseInt(val.toString());
+	}
+
+	context.write(key, new Text(Integer.toString(numEntries)));
+	
     }
      
 }
