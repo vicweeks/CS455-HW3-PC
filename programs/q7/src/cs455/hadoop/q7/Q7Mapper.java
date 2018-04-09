@@ -88,8 +88,10 @@ public class Q7Mapper extends Mapper<LongWritable, Text, Text, IntWritable> {
 	if (state != null) {	   
 	    String compareKey = state + year + month + dayOfMonth + hour;
 	    String eventType = weatherData.get(compareKey);
-	    if (eventType != null)
-		context.write(new Text(eventType), new IntWritable(1));	    
+	    if (eventType != null) {
+		context.write(new Text(state + "," + eventType), new IntWritable(1));
+		context.write(new Text("AllStates," + eventType), new IntWritable(1));
+	    }
 	}
 	
     }

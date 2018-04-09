@@ -1,0 +1,52 @@
+AK    "Hail"	49
+AL    "Ice Storm"	39
+AR    "Frost/Freeze"	74
+AZ    "Lightning"	38
+AllStates    "Thunderstorm Wind"	11288
+CA    "High Wind"	306
+CO    "Ice Storm"	41
+CT    "Flash Flood"	14
+DE    "High Wind"	3
+FL    "Hurricane (Typhoon)"	226
+GA    "Ice Storm"	169
+HI    "Heavy Rain"	15
+IA    "Blizzard"	20
+ID    "Thunderstorm Wind"	28
+IL    "Excessive Heat"	172
+IN    "Drought"	27
+KS    "Winter Weather"	15
+KY    "Excessive Heat"	63
+LA    "Winter Weather"	16
+MA    "Strong Wind"	18
+MD    "Hail"	46
+ME    "Winter Storm"	5
+MI    "Lake-Effect Snow"	90
+MN    "Drought"	57
+MO    "Flood"	50
+MS    "Flood"	7
+MT    "Extreme Cold/Wind Chill"	21
+NA    "Marine Thunderstorm Wind"	29
+NC    "Hurricane (Typhoon)"	41
+ND    "Heavy Snow"	6
+NE    "Blizzard"	28
+NH    "Ice Storm"	10
+NJ    "Storm Surge/Tide"	44
+NM    "Dust Storm"	12
+NV    "Cold/Wind Chill"	59
+NY    "Drought"	68
+OH    "Excessive Heat"	97
+OK    "Cold/Wind Chill"	21
+OR    "Flood"	13
+PA    "Tornado"	46
+RI    "Coastal Flood"	7
+SC    "Thunderstorm Wind"	19
+SD    "Blizzard"	10
+TN    "Excessive Heat"	127
+TX    "Excessive Heat"	289
+UT    "Ice Storm"	23
+VA    "Storm Surge/Tide"	123
+VT    "Hail"	7
+WA    "Thunderstorm Wind"	46
+WI    "Drought"	21
+WV    "Flash Flood"	7
+WY    "High Wind"	10

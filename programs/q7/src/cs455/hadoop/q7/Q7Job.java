@@ -28,7 +28,7 @@ public class Q7Job {
 	    // Mapper
             job.setMapperClass(Q7Mapper.class);
 	    // Combiner. Same as reducer for this program.	    
-            job.setCombinerClass(Q7Reducer.class);
+            job.setCombinerClass(Q7Combiner.class);
 	    // Reducer
             job.setReducerClass(Q7Reducer.class);
 	    //job.setNumReduceTasks(10);
@@ -43,7 +43,7 @@ public class Q7Job {
             // path to input in HDFS
             FileInputFormat.addInputPath(job, new Path("/data/main"));
             // path to output in HDFS
-            FileOutputFormat.setOutputPath(job, new Path("/home/Q7Output/"));
+            FileOutputFormat.setOutputPath(job, new Path("/home/Q7Outputs/"));
             // Block until the job is completed.
             System.exit(job.waitForCompletion(true) ? 0 : 1);
         } catch (IOException e) {
