@@ -46,7 +46,7 @@ public class Q7Mapper extends Mapper<LongWritable, Text, Text, IntWritable> {
 	    String weatherRecord;
 	    while ((weatherRecord = weatherReader.readLine()) != null) {
 		String[] lineData = weatherRecord.split(",");
-		String key = lineData[0]+lineData[2]+lineData[3]+lineData[4];//+lineData[5];
+		String key = lineData[0]+lineData[2]+lineData[3]+lineData[4]+lineData[5];
 		String eventType = lineData[6];
 		weatherData.put(key, eventType);
 	    }
@@ -72,14 +72,21 @@ public class Q7Mapper extends Mapper<LongWritable, Text, Text, IntWritable> {
 	String weatherDelay = record[25];
 
 	// Check if there was a weatherDelay
-	if (origin.equals("NA") || origin.equals("Origin")
+	if (origin.equals("NA") || origin.equals("Origin")	    
 	    || weatherDelay.equals("NA") || weatherDelay.equals("WeatherDelay"))
 	    return;
 
+	String hour = "NA";
+	if (!crsDepTime.equals("NA") && !crsDepTime.equals("CRSDepTime")) {
+	    int hourInt = Integer.parseInt(crsDepTime);
+	    hourInt = hourInt % 24;
+	    hour = Integer.toString(hourInt);
+	}
+	
 	String state = airportData.get(origin);
-
-	if (state != null) {		    
-	    String compareKey = state + year + month + dayOfMonth;
+	
+	if (state != null) {	   
+	    String compareKey = state + year + month + dayOfMonth + hour;
 	    String eventType = weatherData.get(compareKey);
 	    if (eventType != null)
 		context.write(new Text(eventType), new IntWritable(1));	    
